@@ -30,3 +30,4 @@ rostopic hz rostopic info "/r1/pilo/switches"
 
 
 so you get a message at refresh rate, and on edge.
+see refman.pdf for advance doc.

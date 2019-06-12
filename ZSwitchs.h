@@ -1,4 +1,5 @@
 /** @file ZSwitchs.h
+
 An library that manage switches(up to 32 by object/topic) and generate a ros topic std_msgs/UInt32.
 
 

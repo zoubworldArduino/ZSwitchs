@@ -1,17 +1,24 @@
 /** @file ZSwitchs.cpp
 
+This class is use to create ros topic that monitor button/switches.
+
+This library is mainly agnostic regarding arduino architecture it should work on all.
+if HardwareSerial class is missing, create HardwareSerial that extend the Serial class.
+the following define must exist ROS_USED.
 */
 
 #include <ZSwitchs.h>
 //#define DEBUG(a) a
+/** define to manage debug of lib
+*/
 #define DEBUG(a) {}
 
 
 
 /**
- * This will enumerate a GroveEncoder on a particular pin.
- * You can provide an optional callback, or poll the "getValue()" API.
- * mode equal to QUARTER count 4 for a cycle(1 per phase), equal to full it count 1 per cycle(less accurate, but support high frequency).
+  create the object.
+ The default refresh rate 10 hz.
+ you have to call setup() once to use it.
  */
 ZSwitchs::ZSwitchs( ) {
 #ifdef ROS_USED 
@@ -28,21 +35,29 @@ SerialDebug=0;
     SerialDebug->print(") : ");
   }
 }
+/** setup a serial channel to output some debug stuff.
 
+*/
 void ZSwitchs::setSerialDebug(HardwareSerial * mySerialDebug)
 {
   SerialDebug=mySerialDebug;
 }
 
 #ifdef ROS_USED 
+/** define the refresh rate for the topic.
 
-void ZSwitchs::setRefreshRateUs(uint32_t intervalTime)
+*/
+void ZSwitchs::setRefreshRateUs(
+			uint32_t intervalTime//!< refreh period in using
+			)
 {
 	rate=intervalTime;
         timestamp=micros();
 }
 /** setup :
-  At setup after NodeHandle setup, call this to initialise the topic
+  After NodeHandle setup, call this to initialize the topic
+  The topic is of type std_msgs::UInt32, each bit is link to a button, a 1 means state HIGH, 0 means state LOW.
+  
 */
 void ZSwitchs::setup( ros::NodeHandle * myNodeHandle,	const char   *	topic)
 {
@@ -56,11 +71,20 @@ void ZSwitchs::setup( ros::NodeHandle * myNodeHandle,	const char   *	topic)
 }
 /** define a pin as a switch
 
-return the bit location.
+As in servo lib, it attach a pin to the object to sent the status of the pin inside the ros topic.
+
+Return the bit location 
+  - between 0 to 31
+  - -1 means error.
+  .
 
 */
- int ZSwitchs::attach(uint32_t buttonPin)
+ int ZSwitchs::attach(
+ uint32_t buttonPin //!< the pin number or alias to be attach that is connected to the button or ON/OFF sensor
+ )
   {
+	  if (indexMax>=32)
+		  return -1;
   pinMode(buttonPin, INPUT_PULLUP);
   uint8_t buttonState = digitalRead(buttonPin);
   if (buttonState==HIGH)
@@ -75,7 +99,10 @@ return index;
 }
 
 /** loop :
-  on loop  before NodeHandle refresh(spinOnce), call this to update the topic
+  on loop  before NodeHandle refresh(spinOnce), call this to update the topic 
+  the topic is send only if the refresh rate time is reach or if there is a toggle.
+  
+  call this inside loop() main function.
 */
 void ZSwitchs::loop()
 {
