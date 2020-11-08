@@ -81,6 +81,7 @@ Return the bit location
 */
  int ZSwitchs::attach(
  uint32_t buttonPin //!< the pin number or alias to be attach that is connected to the button or ON/OFF sensor
+
  )
   {
 	  if (indexMax>=32)
@@ -97,7 +98,13 @@ Return the bit location
     indexMax++;
 return index;
 }
-
+/** provide the data
+*/
+uint32_t ZSwitchs::getData()
+{
+  loop();
+  return output;
+}
 /** loop :
   on loop  before NodeHandle refresh(spinOnce), call this to update the topic 
   the topic is send only if the refresh rate time is reach or if there is a toggle.
@@ -111,7 +118,7 @@ void ZSwitchs::loop()
 	uint32_t oldoutput=output;
 for(int i=0;i<indexMax;i++)
 {
- uint8_t buttonState = digitalRead(pintable[i]);
+ volatile uint8_t buttonState = digitalRead(pintable[i]);
   if (buttonState==HIGH)
     output|=1<<i;
   else

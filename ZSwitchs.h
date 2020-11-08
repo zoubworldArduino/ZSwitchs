@@ -55,6 +55,7 @@ public:
 	void loop();
 //@}
 #endif
+ uint32_t getData();
  
   private:
     uint32_t rate;
